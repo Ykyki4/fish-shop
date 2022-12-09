@@ -2,6 +2,8 @@
  
 Чатбот в мессенджере телеграм для продажи рыбы с помощью сервиса [Elastic Path](https://elasticpath.com)
 
+[@FishShop](https://t.me/dvmn_verbs_game_support_bot)
+
 Пример работы:
 
 ![](https://github.com/Ykyki4/fish-shop/blob/main/media/tg-example.gif)
