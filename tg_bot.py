@@ -1,6 +1,4 @@
 import logging
-from functools import partial
-from time import time
 
 from environs import Env
 import redis
@@ -12,7 +10,7 @@ from api import get_access_token, get_products, get_product_by_id, download_phot
 
 
 _database = None
-logger = logging.getLogger("BotLogger")
+logger = logging.getLogger('BotLogger')
 
 
 def start(update, context):
@@ -21,12 +19,12 @@ def start(update, context):
     keyboard = [[InlineKeyboardButton(product['attributes']['name'], callback_data=product['id'])]
                 for product in products_raw]
 
-    keyboard.append([InlineKeyboardButton("Корзина", callback_data="cart")])
+    keyboard.append([InlineKeyboardButton('Корзина', callback_data='cart')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text(text='Что хотите закзать?', reply_markup=reply_markup)
-    return "HANDLE_MENU"
+    return 'HANDLE_MENU'
 
 
 def show_menu(update, context):
@@ -40,7 +38,7 @@ def show_menu(update, context):
     keyboard = [[InlineKeyboardButton(product['attributes']['name'], callback_data=product['id'])
                  ] for product in products_raw]
 
-    keyboard.append([InlineKeyboardButton("Корзина", callback_data="cart")])
+    keyboard.append([InlineKeyboardButton('Корзина', callback_data='cart')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -49,7 +47,7 @@ def show_menu(update, context):
         text='Что хотите закзать?',
         reply_markup=reply_markup)
 
-    return "HANDLE_MENU"
+    return 'HANDLE_MENU'
 
 
 def handle_menu(update, context):
@@ -71,14 +69,14 @@ def handle_menu(update, context):
         with open(f'{filename}', 'rb') as image:
             product_price = product['meta']['display_price']['without_tax']['formatted']
             product_text = f'{product["attributes"]["name"]}\n\n'\
-                            f'{product_price} за кг\n\n'\
-                            f'{product["attributes"]["description"]}'
+                           f'{product_price} за кг\n\n'\
+                           f'{product["attributes"]["description"]}'
 
-            keyboard = [[InlineKeyboardButton("1 кг ⚖", callback_data=1),
-                         InlineKeyboardButton("5 кг ⚖", callback_data=5),
-                         InlineKeyboardButton("10 кг ⚖", callback_data=10)],
-                        [InlineKeyboardButton("Корзина🛒", callback_data="cart")],
-                        [InlineKeyboardButton("Назад🔙", callback_data="menu")]
+            keyboard = [[InlineKeyboardButton('1 кг ⚖', callback_data=1),
+                         InlineKeyboardButton('5 кг ⚖', callback_data=5),
+                         InlineKeyboardButton('10 кг ⚖', callback_data=10)],
+                        [InlineKeyboardButton('Корзина🛒', callback_data='cart')],
+                        [InlineKeyboardButton('Назад🔙', callback_data='menu')]
                         ]
 
             markup = InlineKeyboardMarkup(keyboard)
@@ -87,13 +85,13 @@ def handle_menu(update, context):
                                    photo=image,
                                    caption=product_text,
                                    reply_markup=markup,)
-            return "HANDLE_DESCRIPTION"
+            return 'HANDLE_DESCRIPTION'
 
 
 def handle_description(update, context):
     query = update.callback_query
 
-    if query.data == "menu":
+    if query.data == 'menu':
         return show_menu(update, context)
     elif query.data == 'cart':
         return show_cart(update, context)
@@ -109,7 +107,7 @@ def handle_description(update, context):
             text=f'В корзину было добавлено {query.data} кг',
         )
 
-        return "HANDLE_DESCRIPTION"
+        return 'HANDLE_DESCRIPTION'
 
 
 def show_cart(update, context):
@@ -130,13 +128,13 @@ def show_cart(update, context):
 
         keyboard.append(
             [InlineKeyboardButton(f'Убрать {item["name"]} из корзины',
-                                  callback_data=item['id'])]
+                                  callback_data=item["id"])]
         )
 
     cart_text += f'Total: {cart_response["meta"]["display_price"]["with_tax"]["formatted"]}'
 
-    keyboard.append([InlineKeyboardButton("Оплатить💳", callback_data="pay")])
-    keyboard.append([InlineKeyboardButton("Назад🔙", callback_data="menu")])
+    keyboard.append([InlineKeyboardButton('Оплатить💳', callback_data='pay')])
+    keyboard.append([InlineKeyboardButton('Назад🔙', callback_data='menu')])
 
     markup = InlineKeyboardMarkup(keyboard)
 
@@ -144,18 +142,18 @@ def show_cart(update, context):
                              text=cart_text,
                              reply_markup=markup)
 
-    return "HANDLE_CART"
+    return 'HANDLE_CART'
 
 
 def handle_cart(update, context):
     query = update.callback_query
-    if query.data == "menu":
+    if query.data == 'menu':
         return show_menu(update, context)
-    elif query.data == "pay":
+    elif query.data == 'pay':
         context.bot.delete_message(chat_id=query.message.chat_id,
                                    message_id=query.message.message_id)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Пожалуйста, введите свою почту.")
-        return "WAITING_EMAIL"
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Пожалуйста, введите свою почту.')
+        return 'WAITING_EMAIL'
     else:
         delete_from_cart(context.bot_data['shop_access_token'], update.effective_user.id, query.data)
         update.callback_query.answer(
@@ -166,9 +164,11 @@ def handle_cart(update, context):
 
 def waiting_email(update, context):
     context.user_data['email'] = update.message.text
-    update.message.reply_text(text="Мы свяжемся с вами по почте: "+update.message.text)
+    update.message.reply_text(text='Мы свяжемся с вами по почте: '+update.message.text)
 
-    create_customer(context.bot_data['shop_access_token'], update.message.from_user.username, context.user_data['email'])
+    create_customer(context.bot_data['shop_access_token'],
+                    update.message.from_user.username,
+                    context.user_data['email'])
 
 
 def handle_users_reply(update, context):
@@ -184,7 +184,7 @@ def handle_users_reply(update, context):
     if user_reply == '/start':
         user_state = 'START'
     else:
-        user_state = db.get(chat_id).decode("utf-8")
+        user_state = db.get(chat_id).decode('utf-8')
 
     states_functions = {
         'START': start,
@@ -206,9 +206,9 @@ def error(update, context):
 def get_database_connection():
     global _database
     if _database is None:
-        database_password = env("DATABASE_PASSWORD")
-        database_host = env("DATABASE_HOST")
-        database_port = env("DATABASE_PORT")
+        database_password = env('DATABASE_PASSWORD')
+        database_host = env('DATABASE_HOST')
+        database_port = env('DATABASE_PORT')
         _database = redis.Redis(host=database_host, port=database_port, password=database_password)
     return _database
 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     env = Env()
     env.read_env()
     
-    tg_token = env("TG_TOKEN")
+    tg_token = env('TG_TOKEN')
     shop_client_id = env('SHOP_CLIENT_ID')
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

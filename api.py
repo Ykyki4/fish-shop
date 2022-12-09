@@ -1,13 +1,8 @@
 import os
 import pathlib
-import random
 from urllib.parse import urlsplit, unquote
 
 import requests
-from environs import Env
-import random
-import sched
-import time
 
 
 def get_access_token(client_id):
@@ -29,12 +24,12 @@ def get_products(access_token):
     return requests.get('https://api.moltin.com/catalog/products', headers=headers).json()['data']
 
 
-def get_product_by_id(access_token, id):
+def get_product_by_id(access_token, product_id):
     headers = {
         'Authorization': f'Bearer {access_token}',
     }
 
-    return requests.get(f'https://api.moltin.com/catalog/products/{id}', headers=headers).json()['data']
+    return requests.get(f'https://api.moltin.com/catalog/products/{product_id}', headers=headers).json()['data']
 
 
 def download_photo(token, img_id):
@@ -120,15 +115,3 @@ def create_customer(access_token, name, email):
     response = requests.post(f"https://api.moltin.com/v2/customers", headers=headers, json=customer_data)
 
     return response
-
-
-if __name__ == '__main__':
-    env = Env()
-    env.read_env()
-
-    shop_client_id = env('SHOP_CLIENT_ID')
-
-    shop_access_token, _ = get_access_token(shop_client_id)
-
-    print(get_cart(shop_access_token))
-
