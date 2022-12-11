@@ -29,11 +29,6 @@ def start(update, context):
 
 
 def show_menu(update, context):
-    context.bot.delete_message(
-        chat_id=update.effective_user.id,
-        message_id=update.callback_query.message.message_id,
-    )
-
     products_raw = get_products(context.bot_data['shop_access_token'])
 
     keyboard = [[InlineKeyboardButton(product['attributes']['name'], callback_data=product['id'])
@@ -47,6 +42,10 @@ def show_menu(update, context):
         chat_id=update.effective_user.id,
         text='Что хотите закзать?',
         reply_markup=reply_markup)
+    context.bot.delete_message(
+        chat_id=update.effective_user.id,
+        message_id=update.callback_query.message.message_id,
+    )
 
     return 'HANDLE_MENU'
 
@@ -60,9 +59,6 @@ def handle_menu(update, context):
         context.user_data['product_id'] = query.data
 
         product = get_product_by_id(context.bot_data['shop_access_token'], query.data)
-
-        context.bot.delete_message(chat_id=query.message.chat_id,
-                                   message_id=query.message.message_id)
 
         product_img_id = product['relationships']['main_image']['data']['id']
         filename = download_photo(context.bot_data['shop_access_token'], product_img_id)
@@ -88,6 +84,9 @@ def handle_menu(update, context):
                                    photo=image,
                                    caption=product_text,
                                    reply_markup=markup,)
+            context.bot.delete_message(chat_id=query.message.chat_id,
+                                       message_id=query.message.message_id)
+
             return 'HANDLE_DESCRIPTION'
 
 
@@ -115,9 +114,6 @@ def handle_description(update, context):
 
 def show_cart(update, context):
     query = update.callback_query
-
-    context.bot.delete_message(chat_id=query.message.chat_id,
-                               message_id=query.message.message_id)
 
     cart_response, items_response = get_cart(context.bot_data['shop_access_token'], update.effective_user.id)
 
@@ -147,6 +143,8 @@ def show_cart(update, context):
     context.bot.send_message(chat_id=update.effective_user.id,
                              text=cart_text,
                              reply_markup=markup)
+    context.bot.delete_message(chat_id=query.message.chat_id,
+                               message_id=query.message.message_id)
 
     return 'HANDLE_CART'
 
@@ -156,9 +154,9 @@ def handle_cart(update, context):
     if query.data == 'menu':
         return show_menu(update, context)
     elif query.data == 'pay':
+        context.bot.send_message(chat_id=update.effective_chat.id, text='Пожалуйста, введите свою почту.')
         context.bot.delete_message(chat_id=query.message.chat_id,
                                    message_id=query.message.message_id)
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Пожалуйста, введите свою почту.')
         return 'WAITING_EMAIL'
     else:
         delete_from_cart(context.bot_data['shop_access_token'], update.effective_user.id, query.data)
