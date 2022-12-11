@@ -23,10 +23,10 @@ def get_products(access_token):
         'Authorization': f'Bearer {access_token}',
     }
 
-    response = requests.get('https://api.moltin.com/catalog/products', headers=headers).json()['data']
+    response = requests.get('https://api.moltin.com/catalog/products', headers=headers)
     response.raise_for_status()
 
-    return response
+    return response.json()['data']
 
 
 def get_product_by_id(access_token, product_id):
@@ -34,10 +34,10 @@ def get_product_by_id(access_token, product_id):
         'Authorization': f'Bearer {access_token}',
     }
 
-    response = requests.get(f'https://api.moltin.com/catalog/products/{product_id}', headers=headers).json()['data']
+    response = requests.get(f'https://api.moltin.com/catalog/products/{product_id}', headers=headers)
     response.raise_for_status()
 
-    return response
+    return response.json()['data']
 
 def download_photo(token, img_id):
     headers = {
