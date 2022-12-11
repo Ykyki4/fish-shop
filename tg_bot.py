@@ -1,4 +1,5 @@
 import logging
+from textwrap import dedent
 
 from environs import Env
 import redis
@@ -68,9 +69,11 @@ def handle_menu(update, context):
 
         with open(f'{filename}', 'rb') as image:
             product_price = product['meta']['display_price']['without_tax']['formatted']
-            product_text = f'{product["attributes"]["name"]}\n\n'\
-                           f'{product_price} за кг\n\n'\
-                           f'{product["attributes"]["description"]}'
+            product_text = dedent(f'''
+                            {product["attributes"]["name"]}
+                            {product_price} за кг
+                            {product["attributes"]["description"]}
+                            ''')
 
             keyboard = [[InlineKeyboardButton('1 кг ⚖', callback_data=1),
                          InlineKeyboardButton('5 кг ⚖', callback_data=5),
@@ -121,10 +124,13 @@ def show_cart(update, context):
     cart_text = ''
     keyboard = []
     for item in items_response:
-        cart_text += (f'{item["name"]}\n\n'
-                      f'{item["meta"]["display_price"]["with_tax"]["unit"]["formatted"]} за кг\n'
-                      f'{item["quantity"]} кг в корзине за '
-                      f'{item["meta"]["display_price"]["with_tax"]["value"]["formatted"]}\n\n')
+        cart_text += (
+            dedent(f'''
+            {item["name"]}
+            {item["meta"]["display_price"]["with_tax"]["unit"]["formatted"]} за кг
+            {item["quantity"]} кг в корзине за
+            {item["meta"]["display_price"]["with_tax"]["value"]["formatted"]}
+            '''))
 
         keyboard.append(
             [InlineKeyboardButton(f'Убрать {item["name"]} из корзины',
@@ -221,7 +227,7 @@ def regenerate_shop_access_token(context):
 if __name__ == '__main__':
     env = Env()
     env.read_env()
-    
+
     tg_token = env('TG_TOKEN')
     shop_client_id = env('SHOP_CLIENT_ID')
 
