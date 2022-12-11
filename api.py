@@ -13,6 +13,8 @@ def get_access_token(client_id):
 
     response = requests.post('https://api.moltin.com/oauth/access_token', data=data)
 
+    response.raise_for_status()
+
     return response.json()['access_token'], response.json()['expires']
 
 
@@ -21,7 +23,10 @@ def get_products(access_token):
         'Authorization': f'Bearer {access_token}',
     }
 
-    return requests.get('https://api.moltin.com/catalog/products', headers=headers).json()['data']
+    response = requests.get('https://api.moltin.com/catalog/products', headers=headers).json()['data']
+    response.raise_for_status()
+
+    return response
 
 
 def get_product_by_id(access_token, product_id):
@@ -29,8 +34,10 @@ def get_product_by_id(access_token, product_id):
         'Authorization': f'Bearer {access_token}',
     }
 
-    return requests.get(f'https://api.moltin.com/catalog/products/{product_id}', headers=headers).json()['data']
+    response = requests.get(f'https://api.moltin.com/catalog/products/{product_id}', headers=headers).json()['data']
+    response.raise_for_status()
 
+    return response
 
 def download_photo(token, img_id):
     headers = {
@@ -64,7 +71,9 @@ def get_cart(access_token, cart_id):
     }
 
     response = requests.get(f"https://api.moltin.com/v2/carts/{cart_id}", headers=headers)
+    response.raise_for_status()
     items_response = requests.get(f"https://api.moltin.com/v2/carts/{cart_id}/items", headers=headers)
+    items_response.raise_for_status()
 
     return response.json()['data'], items_response.json()['data']
 
@@ -83,6 +92,7 @@ def add_product_to_cart(access_token, cart_id, product_id, quantity):
         },
     }
     response = requests.post(f"https://api.moltin.com/v2/carts/{cart_id}/items", headers=headers, json=cart_data)
+    response.raise_for_status()
 
     return response.json()
 
@@ -94,6 +104,7 @@ def delete_from_cart(access_token, cart_id, product_id):
     }
 
     response = requests.delete(f"https://api.moltin.com/v2/carts/{cart_id}/items/{product_id}", headers=headers)
+    response.raise_for_status()
 
     return response.json()
 
@@ -113,5 +124,6 @@ def create_customer(access_token, name, email):
     }
 
     response = requests.post(f"https://api.moltin.com/v2/customers", headers=headers, json=customer_data)
+    response.raise_for_status()
 
     return response
